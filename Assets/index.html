@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alya Offline Chat</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header>
+            <div class="header-title">
+                <div class="ai-avatar">A</div>
+                <div>
+                    <div>Alya - Offline AI</div>
+                    <div class="status-text">● Offline Mode</div>
+                </div>
+            </div>
+            <div class="header-icons">
+                <button class="icon-btn" id="btn-wallpaper" title="Ganti Wallpaper" aria-label="Ganti Wallpaper">🖼️</button>
+                <button class="icon-btn" id="btn-bg-size" title="Ubah Ukuran Gambar" aria-label="Ubah Ukuran Gambar">📐</button>
+                <button class="icon-btn" id="btn-clear" title="Hapus Semua Chat" aria-label="Hapus Semua Chat">🗑️</button>
+                <button class="icon-btn" id="btn-theme" title="Ganti Tema" aria-label="Ganti Tema">🎨</button>
+                <button class="icon-btn" id="btn-upload-image" title="Kirim Gambar" aria-label="Kirim Gambar">📤</button>
+                <button class="icon-btn" id="btn-settings" title="Pengaturan" aria-label="Pengaturan">⚙️</button>
+            </div>
+        </header>
+
+        <main class="chat-box" id="chat-box">
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </main>
+
+        <div class="sticker-panel" id="sticker-panel">
+            <div class="sticker-item" data-sticker="🚀">🚀</div>
+            <div class="sticker-item" data-sticker="🔥">🔥</div>
+            <div class="sticker-item" data-sticker="😂">😂</div>
+            <div class="sticker-item" data-sticker="😎">😎</div>
+            <div class="sticker-item" data-sticker="💡">💡</div>
+        </div>
+
+        <footer>
+            <div class="input-area">
+                <button class="btn-icon" id="btn-sticker" aria-label="Stiker">😊</button>
+                <input type="text" class="input-box" id="msg-input" placeholder="Ketik pesan..." autocomplete="off">
+                <button class="btn-icon btn-mic" id="btn-mic" aria-label="Mikrofon">🎙️</button>
+                <button class="btn-send" id="btn-send" aria-label="Kirim">➤</button>
+            </div>
+        </footer>
+    </div>
+
+    <div class="settings-overlay" id="settings-overlay" aria-hidden="true">
+        <div class="settings-panel">
+            <div class="settings-header">
+                <div>Pengaturan</div>
+                <button class="icon-btn" id="btn-settings-close" aria-label="Tutup">✕</button>
+            </div>
+            <div class="settings-section">
+                <div class="section-title">Data & Riwayat</div>
+                <button class="settings-btn" id="btn-export">Ekspor Data</button>
+                <button class="settings-btn" id="btn-import">Impor Data</button>
+                <button class="settings-btn danger" id="btn-clear-data">Hapus Data Lokal</button>
+                <div class="section-note">Ekspor menyimpan chat dan pengaturan. Impor akan menimpa data lokal.</div>
+            </div>
+            <div class="settings-section">
+                <div class="section-title">Model</div>
+                <label class="settings-label" for="model-path">Path model Qwen3.5-2B (gguf)</label>
+                <button class="settings-btn" id="btn-pick-model">Pilih File Model</button>
+                <input class="settings-input" id="model-path" placeholder="/sdcard/Alya/model/qwen3.5-2b.gguf">
+                <button class="settings-btn" id="btn-save-model">Simpan Path Model</button>
+                <div class="section-note">Model tidak disertakan di APK. Pilih file .gguf dari penyimpanan perangkat saat pertama kali menjalankan.</div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="bg-upload" accept="image/*">
+    <input type="file" id="img-upload" accept="image/*">
+
+    <script src="js/app.js"></script>
+</body>
+</html>
