@@ -17,10 +17,10 @@ namespace AlyaOfflineChat;
 [Activity(Label = "@string/app_name", MainLauncher = true, Exported = true)]
 public class MainActivity : Activity, TextToSpeech.IOnInitListener
 {
-    private const int RequestExport = 9001;
-    private const int RequestImport = 9002;
-    private const int RequestFileChooser = 9003;
-    private const int RequestModelPick = 9004;
+    private const int RequestExportCode = 9001;
+    private const int RequestImportCode = 9002;
+    private const int RequestFileChooserCode = 9003;
+    private const int RequestModelPickCode = 9004;
 
     private WebView? _webView;
     private ChatEngine? _chatEngine;
@@ -103,7 +103,7 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         intent.AddCategory(Intent.CategoryOpenable);
         intent.SetType("application/json");
         intent.PutExtra(Intent.ExtraTitle, $"alya-export-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
-        StartActivityForResult(intent, RequestExport);
+        StartActivityForResult(intent, RequestExportCode);
     }
 
     internal void RequestImport()
@@ -111,7 +111,7 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         var intent = new Intent(Intent.ActionOpenDocument);
         intent.AddCategory(Intent.CategoryOpenable);
         intent.SetType("application/json");
-        StartActivityForResult(intent, RequestImport);
+        StartActivityForResult(intent, RequestImportCode);
     }
 
     internal void RequestModelPickFromUi()
@@ -125,7 +125,7 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         intent.AddCategory(Intent.CategoryOpenable);
         intent.SetType("*/*");
         intent.PutExtra(Intent.ExtraMimeTypes, new[] { "application/octet-stream", "application/x-gguf", "application/x-llama-gguf" });
-        StartActivityForResult(intent, RequestModelPick);
+        StartActivityForResult(intent, RequestModelPickCode);
     }
 
     internal bool HandleFileChooser(IValueCallback filePathCallback, WebChromeClient.FileChooserParams fileChooserParams)
@@ -144,7 +144,7 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
             return false;
         }
 
-        StartActivityForResult(intent, RequestFileChooser);
+        StartActivityForResult(intent, RequestFileChooserCode);
         return true;
     }
 
@@ -152,25 +152,25 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
     {
         base.OnActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RequestFileChooser)
+        if (requestCode == RequestFileChooserCode)
         {
             HandleFileChooserResult(resultCode, data);
             return;
         }
 
-        if (requestCode == RequestExport)
+        if (requestCode == RequestExportCode)
         {
             HandleExportResult(resultCode, data);
             return;
         }
 
-        if (requestCode == RequestImport)
+        if (requestCode == RequestImportCode)
         {
             HandleImportResult(resultCode, data);
             return;
         }
 
-        if (requestCode == RequestModelPick)
+        if (requestCode == RequestModelPickCode)
         {
             HandleModelPickResult(resultCode, data);
             return;
