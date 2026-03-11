@@ -15,7 +15,7 @@ using System.IO;
 
 namespace AlyaOfflineChat;
 
-[Activity(Label = "@string/app_name", MainLauncher = true, Exported = true)]
+[Activity(Label = "@string/app_name", MainLauncher = true, Exported = true, HardwareAccelerated = false)]
 public class MainActivity : Activity, TextToSpeech.IOnInitListener
 {
     private const int RequestExportCode = 9001;
