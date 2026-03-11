@@ -12,6 +12,7 @@ using AlyaOfflineChat.Services;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.IO;
+using Android.Views;
 
 namespace AlyaOfflineChat;
 
@@ -37,21 +38,17 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         {
             SetContentView(Resource.Layout.activity_main);
 
-            _webView = FindViewById<WebView>(Resource.Id.webView);
-            if (_webView == null)
+            var root = FindViewById<FrameLayout>(Resource.Id.root);
+            if (root == null)
             {
-                throw new InvalidOperationException("WebView tidak ditemukan.");
+                throw new InvalidOperationException("Root container tidak ditemukan.");
             }
 
-            var settings = _webView.Settings;
-            settings.JavaScriptEnabled = true;
-            settings.DomStorageEnabled = true;
-            settings.AllowFileAccess = true;
-            settings.AllowContentAccess = true;
-            settings.MediaPlaybackRequiresUserGesture = false;
-
-            _webView.SetWebViewClient(new LocalOnlyWebViewClient());
-            _webView.SetWebChromeClient(new AlyaWebChromeClient(this));
+            _webView = TryCreateWebView(root);
+            if (_webView == null)
+            {
+                return;
+            }
 
             var dataDir = FilesDir?.AbsolutePath ?? CacheDir?.AbsolutePath ?? "/data/data/com.companyname.AlyaOfflineChat";
             var systemPrompt = PersonalityLoader.LoadFromAssets(this);
@@ -66,6 +63,45 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         catch (Exception ex)
         {
             ReportFatalError(ex);
+        }
+    }
+
+    private WebView? TryCreateWebView(FrameLayout root)
+    {
+        try
+        {
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+            {
+                var pkg = WebView.GetCurrentWebViewPackage(this);
+                if (pkg == null)
+                {
+                    ShowFatalText("Android System WebView tidak ditemukan. Aktifkan atau perbarui WebView/Chrome.");
+                    return null;
+                }
+            }
+
+            var webView = new WebView(this);
+            webView.LayoutParameters = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MatchParent,
+                ViewGroup.LayoutParams.MatchParent);
+            root.AddView(webView);
+
+            var settings = webView.Settings;
+            settings.JavaScriptEnabled = true;
+            settings.DomStorageEnabled = true;
+            settings.AllowFileAccess = true;
+            settings.AllowContentAccess = true;
+            settings.MediaPlaybackRequiresUserGesture = false;
+
+            webView.SetWebViewClient(new LocalOnlyWebViewClient());
+            webView.SetWebChromeClient(new AlyaWebChromeClient(this));
+
+            return webView;
+        }
+        catch (Exception ex)
+        {
+            ReportFatalError(ex);
+            return null;
         }
     }
 
@@ -378,6 +414,11 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         }
 
         var message = "Alya gagal dibuka. Coba pastikan Android System WebView aktif dan perbarui bila perlu.\n\nDetail:\n" + ex.Message;
+        ShowFatalText(message);
+    }
+
+    private void ShowFatalText(string message)
+    {
         var textView = new TextView(this)
         {
             Text = message
