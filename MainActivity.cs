@@ -11,6 +11,7 @@ using Uri = Android.Net.Uri;
 using AlyaOfflineChat.Services;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace AlyaOfflineChat;
 
@@ -32,33 +33,40 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
     protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
-        SetContentView(Resource.Layout.activity_main);
-
-        _webView = FindViewById<WebView>(Resource.Id.webView);
-        if (_webView == null)
+        try
         {
-            return;
+            SetContentView(Resource.Layout.activity_main);
+
+            _webView = FindViewById<WebView>(Resource.Id.webView);
+            if (_webView == null)
+            {
+                throw new InvalidOperationException("WebView tidak ditemukan.");
+            }
+
+            var settings = _webView.Settings;
+            settings.JavaScriptEnabled = true;
+            settings.DomStorageEnabled = true;
+            settings.AllowFileAccess = true;
+            settings.AllowContentAccess = true;
+            settings.MediaPlaybackRequiresUserGesture = false;
+
+            _webView.SetWebViewClient(new LocalOnlyWebViewClient());
+            _webView.SetWebChromeClient(new AlyaWebChromeClient(this));
+
+            var dataDir = FilesDir?.AbsolutePath ?? CacheDir?.AbsolutePath ?? "/data/data/com.companyname.AlyaOfflineChat";
+            var systemPrompt = PersonalityLoader.LoadFromAssets(this);
+            _chatEngine = new ChatEngine(dataDir, systemPrompt);
+            EnsureModelSelection();
+
+            _webView.AddJavascriptInterface(new AlyaJsBridge(this, _chatEngine), "AlyaBridge");
+            _webView.LoadUrl("file:///android_asset/index.html");
+
+            _tts = new TextToSpeech(this, this);
         }
-
-        var settings = _webView.Settings;
-        settings.JavaScriptEnabled = true;
-        settings.DomStorageEnabled = true;
-        settings.AllowFileAccess = true;
-        settings.AllowContentAccess = true;
-        settings.MediaPlaybackRequiresUserGesture = false;
-
-        _webView.SetWebViewClient(new LocalOnlyWebViewClient());
-        _webView.SetWebChromeClient(new AlyaWebChromeClient(this));
-
-        var dataDir = FilesDir?.AbsolutePath ?? CacheDir?.AbsolutePath ?? "/data/data/com.companyname.AlyaOfflineChat";
-        var systemPrompt = PersonalityLoader.LoadFromAssets(this);
-        _chatEngine = new ChatEngine(dataDir, systemPrompt);
-        EnsureModelSelection();
-
-        _webView.AddJavascriptInterface(new AlyaJsBridge(this, _chatEngine), "AlyaBridge");
-        _webView.LoadUrl("file:///android_asset/index.html");
-
-        _tts = new TextToSpeech(this, this);
+        catch (Exception ex)
+        {
+            ReportFatalError(ex);
+        }
     }
 
     private void EnsureModelSelection()
@@ -354,6 +362,28 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
         base.OnDestroy();
         _tts?.Stop();
         _tts?.Shutdown();
+    }
+
+    private void ReportFatalError(Exception ex)
+    {
+        try
+        {
+            var baseDir = FilesDir?.AbsolutePath ?? CacheDir?.AbsolutePath ?? "/data/data/com.companyname.AlyaOfflineChat";
+            var logPath = Path.Combine(baseDir, "alya_crash.log");
+            File.AppendAllText(logPath, $"{DateTime.UtcNow:O} {ex}\n");
+        }
+        catch
+        {
+            // ignore
+        }
+
+        var message = "Alya gagal dibuka. Coba pastikan Android System WebView aktif dan perbarui bila perlu.\n\nDetail:\n" + ex.Message;
+        var textView = new TextView(this)
+        {
+            Text = message
+        };
+        textView.SetPadding(24, 24, 24, 24);
+        SetContentView(textView);
     }
 }
 
