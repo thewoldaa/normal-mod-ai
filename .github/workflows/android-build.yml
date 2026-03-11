@@ -35,14 +35,20 @@ jobs:
         run: dotnet restore
 
       - name: Build APK (Debug)
-        run: dotnet publish -c Debug -f net9.0-android -p:AndroidPackageFormat=apk
+        run: dotnet publish -c Debug -f net9.0-android -p:AndroidPackageFormat=apk -p:AndroidCreatePackagePerAbi=false -p:AndroidSupportedAbis=armeabi-v7a;arm64-v8a
 
       - name: Collect APK
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          apk_path="$(find . -type f -name '*.apk' -path '*bin/Debug*' | head -n 1)"
+          apk_path="$(find . -type f -name '*-Signed.apk' -path '*bin/Debug*' | head -n 1)"
+          if [ -z "$apk_path" ]; then
+            apk_path="$(find . -type f -name '*Signed.apk' -path '*bin/Debug*' | head -n 1)"
+          fi
+          if [ -z "$apk_path" ]; then
+            apk_path="$(find . -type f -name '*.apk' -path '*bin/Debug*' | head -n 1)"
+          fi
           if [ -z "$apk_path" ]; then
             echo "APK not found." >&2
             exit 1
