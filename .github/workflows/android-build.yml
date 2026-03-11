@@ -35,7 +35,7 @@ jobs:
         run: dotnet restore
 
       - name: Build APK (Debug)
-        run: dotnet publish -c Debug -f net9.0-android -p:AndroidPackageFormat=apk -p:AndroidCreatePackagePerAbi=false "-p:AndroidSupportedAbis=armeabi-v7a;arm64-v8a"
+        run: dotnet publish -c Debug -f net9.0-android -p:AndroidPackageFormat=apk
 
       - name: Collect APK
         shell: bash

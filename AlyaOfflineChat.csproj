@@ -10,6 +10,8 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidSkipCompression>gguf</AndroidSkipCompression>
+    <AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
+    <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
     <RunAOTCompilation>false</RunAOTCompilation>
     <!--
       Enables trim analyzers and full trimming during Release mode.
