@@ -74,8 +74,7 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
             return;
         }
 
-        Toast.MakeText(this, "Model tidak termasuk APK. Pilih file Qwen_Qwen3.5-2B-Q4_K_M.gguf di penyimpanan.", ToastLength.Long)?.Show();
-        RequestModelPick();
+        Toast.MakeText(this, "Model tidak termasuk APK. Buka Pengaturan lalu pilih file Qwen_Qwen3.5-2B-Q4_K_M.gguf.", ToastLength.Long)?.Show();
     }
 
     public void OnInit([GeneratedEnum] OperationResult status)
@@ -116,7 +115,7 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
 
     internal void RequestModelPickFromUi()
     {
-        RequestModelPick();
+        RunOnUiThread(RequestModelPick);
     }
 
     private void RequestModelPick()
