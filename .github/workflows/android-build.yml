@@ -1,0 +1,57 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android workload
+        run: dotnet workload install android --ignore-failed-sources
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build APK (Debug)
+        run: dotnet publish -c Debug -f net9.0-android -p:AndroidPackageFormat=apk
+
+      - name: Collect APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          apk_path="$(find . -type f -name '*.apk' -path '*bin/Debug*' | head -n 1)"
+          if [ -z "$apk_path" ]; then
+            echo "APK not found." >&2
+            exit 1
+          fi
+          cp "$apk_path" artifacts/
+          echo "Collected: $apk_path"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-debug
+          path: artifacts/*.apk
