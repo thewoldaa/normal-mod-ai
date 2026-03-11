@@ -44,21 +44,13 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
                 throw new InvalidOperationException("Root container tidak ditemukan.");
             }
 
-            _webView = TryCreateWebView(root);
-            if (_webView == null)
-            {
-                return;
-            }
-
             var dataDir = FilesDir?.AbsolutePath ?? CacheDir?.AbsolutePath ?? "/data/data/com.companyname.AlyaOfflineChat";
             var systemPrompt = PersonalityLoader.LoadFromAssets(this);
             _chatEngine = new ChatEngine(dataDir, systemPrompt);
             EnsureModelSelection();
 
-            _webView.AddJavascriptInterface(new AlyaJsBridge(this, _chatEngine), "AlyaBridge");
-            _webView.LoadUrl("file:///android_asset/index.html");
-
             _tts = new TextToSpeech(this, this);
+            ShowStartupUi(root);
         }
         catch (Exception ex)
         {
@@ -103,6 +95,67 @@ public class MainActivity : Activity, TextToSpeech.IOnInitListener
             ReportFatalError(ex);
             return null;
         }
+    }
+
+    private void ShowStartupUi(FrameLayout root)
+    {
+        root.RemoveAllViews();
+
+        var container = new LinearLayout(this)
+        {
+            Orientation = Orientation.Vertical
+        };
+        container.SetPadding(32, 48, 32, 32);
+
+        var title = new TextView(this)
+        {
+            Text = "Alya Offline Chat"
+        };
+        title.TextSize = 20;
+
+        var info = new TextView(this)
+        {
+            Text = "Tekan tombol di bawah untuk membuka chat. Model diimpor dari Pengaturan setelah aplikasi terbuka."
+        };
+        info.SetPadding(0, 16, 0, 24);
+
+        var openButton = new Button(this)
+        {
+            Text = "Buka Chat"
+        };
+        openButton.Click += (_, _) =>
+        {
+            if (_webView != null)
+            {
+                return;
+            }
+
+            var webView = TryCreateWebView(root);
+            if (webView == null)
+            {
+                return;
+            }
+
+            _webView = webView;
+            AttachWebUi(root, webView);
+        };
+
+        container.AddView(title);
+        container.AddView(info);
+        container.AddView(openButton);
+        root.AddView(container);
+    }
+
+    private void AttachWebUi(FrameLayout root, WebView webView)
+    {
+        root.RemoveAllViews();
+        root.AddView(webView);
+
+        if (_chatEngine != null)
+        {
+            webView.AddJavascriptInterface(new AlyaJsBridge(this, _chatEngine), "AlyaBridge");
+        }
+        webView.LoadUrl("file:///android_asset/index.html");
     }
 
     private void EnsureModelSelection()
